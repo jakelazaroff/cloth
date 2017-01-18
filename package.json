@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/jakelazaroff/cloth/issues"
   },
-  "homepage": "https://github.com/jakelazaroff/cloth#readme"
+  "homepage": "https://github.com/jakelazaroff/cloth#readme",
+  "dependencies": {
+    "serialize-error": "^2.1.0"
+  }
 }
