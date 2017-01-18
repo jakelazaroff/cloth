@@ -126,7 +126,7 @@ describe('Pool', () => {
         workers: 0
       });
 
-      pool.run('test');
+      pool.run('');
       pool.drain();
       pool.tasks.length.should.equal(0);
     });
