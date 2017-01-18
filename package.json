@@ -1,11 +1,22 @@
 {
   "name": "cloth",
   "version": "0.1.0",
-  "description": "",
+  "description": "Cloth is a simple thread pool and task queue for Node.",
   "main": "index.js",
   "scripts": {
     "test": "mocha test --recursive"
   },
+  "keywords": [
+    "thread",
+    "pool",
+    "concurrent",
+    "parallel",
+    "multithread",
+    "process",
+    "child",
+    "worker",
+    "task"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/jakelazaroff/cloth.git"
