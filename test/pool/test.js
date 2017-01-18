@@ -67,4 +67,68 @@ describe('Pool', () => {
       });
     });
   });
+
+  describe('.available()', () => {
+
+    it('should return the number of idle workers', done => {
+      pool = new Pool(path, {
+        workers: 1
+      });
+
+      pool.available().should.equal(1);
+
+      pool.on('start', () => {
+        pool.available().should.equal(0);
+      });
+
+      pool.on('end', () => {
+        pool.available().should.equal(1);
+        done();
+      });
+
+      pool.run('');
+    });
+  });
+
+  describe('.total()', () => {
+
+    it('should return the total number workers', done => {
+      pool = new Pool(path, {
+        workers: 1
+      });
+
+      pool.total().should.equal(1);
+
+      pool.on('start', () => {
+        pool.total().should.equal(1);
+        done();
+      });
+
+      pool.run('');
+    });
+  });
+
+  describe('.drain()', () => {
+
+    it('should kill all workers', done => {
+
+      pool = new Pool(path, {
+        workers: 1
+      });
+
+      pool.workers[pool.idle[0]].on('exit', done);
+
+      pool.drain();
+    });
+
+    it('should remove all tasks from the queue', () => {
+      pool = new Pool(path, {
+        workers: 0
+      });
+
+      pool.run('test');
+      pool.drain();
+      pool.tasks.length.should.equal(0);
+    });
+  });
 });
