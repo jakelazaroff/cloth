@@ -4,6 +4,7 @@ Cloth is a simple thread pool and task queue for Node. It's a lightweight abstra
 
 ```javascript
 // index.js 
+
 const Pool = require('cloth');
 
 const pool = new Pool(`${__dirname}/worker`);
@@ -131,7 +132,7 @@ run (command, callback) {
 
 ### Pool
 
-A `Pool` is your program's interface to Cloth. It manages the worker pool and task queue.
+A Pool is the main program's interface to Cloth. It manages the worker pool and task queue.
 
 #### constructor(worker, [options])
 
@@ -148,17 +149,27 @@ Creates a task with the given command to be run as soon as a worker is available
 
 #### on(event, listener)
 
+
+
 #### total()
 
-The number of workers in the pool.
+Returns the number of workers in the pool.
 
 #### available()
 
-The number of workers in the pool that are not currently processing tasks.
+Returns the number of workers in the pool that are not currently processing tasks.
+
+#### drain()
+
+Kills all the worker processes and removes all the tasks from the queue.
 
 ### Thread
 
+A Thread is the workers' interface to Cloth. It manages lifecycle events and error handling, and provides a method for the worker to process tasks. This should be subclassed in the worker file.
+
 #### run(command, [callback])
+
+Gets called with the task's command whenever the worker picks up a task. It must always be overridden (the Thread implementation of this method will throw an error). If this method doesn't take a callback, returning any value will cause the task to end successfully; If this method **does** take a callback, errors can be sent with `callback(err)` and successful results with `callback(null, results)`. Throwing an error will also make the worker send an error back to the main process.
 
 #### send(event, message)
 
