@@ -114,49 +114,48 @@ describe('Pool', () => {
       });
     });
 
-    describe('start', () => {
-
-      it('should proxy task "start" events', done => {
-        const task1 = pool.run('wait'),
-              task2 = pool.run('wait');
-
-        pool.on('start', _task => {
-          _task.should.equal(task2);
-          done();
-        });
-
-        task1._send('go');
-      });
-    });
-
-    describe('end', () => {
-
+    it('should proxy task "start" events', done => {
       let task;
 
-      it('should proxy task "end" events', done => {
-        let task;
-
-        pool.on('end', (message, _task) => {
-          _task.should.equal(task);
-          done();
-        });
-
-        task = pool.run('');
+      pool.on('start', _task => {
+        _task.should.equal(task);
+        done();
       });
+
+      task = pool.run('');
     });
 
-    describe('error', () => {
+    it('should proxy task "end" events', done => {
+      let task;
 
-      it('should proxy task "error" events', done => {
-        let task;
-
-        pool.on('error', (err, _task) => {
-          _task.should.equal(task);
-          done();
-        });
-
-        task = pool.run('error');
+      pool.on('end', (message, _task) => {
+        _task.should.equal(task);
+        done();
       });
+
+      task = pool.run('');
+    });
+
+    it('should proxy task "error" events', done => {
+      let task;
+
+      pool.on('error', (err, _task) => {
+        _task.should.equal(task);
+        done();
+      });
+
+      task = pool.run('error');
+    });
+
+    it('should proxy arbitrary events', done => {
+      let task;
+
+      pool.on('test', (message, _task) => {
+        _task.should.equal(task);
+        done();
+      });
+
+      task = pool.run('');
     });
   });
 

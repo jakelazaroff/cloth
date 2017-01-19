@@ -1,5 +1,7 @@
 'use strict';
 
+const cp = require('child_process');
+
 const Task = require('../lib/task');
 
 describe('Task', () => {

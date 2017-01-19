@@ -30,6 +30,7 @@ class Worker extends Thread {
     if (this.wait) {
       setTimeout(() => this.busyWait(callback), 0);
     } else {
+      this.send('test');
       callback();
     }
   }
