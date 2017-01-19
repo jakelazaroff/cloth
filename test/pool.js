@@ -8,7 +8,7 @@ require('chai').should();
 const sinon = require('sinon');
 
 // modules
-const Pool = require('../../lib/pool');
+const Pool = require('../lib/pool');
 
 describe('Pool', () => {
 

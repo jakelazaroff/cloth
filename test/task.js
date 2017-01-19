@@ -1,6 +1,6 @@
 'use strict';
 
-const Task = require('../../lib/task');
+const Task = require('../lib/task');
 
 describe('Task', () => {
 
