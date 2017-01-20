@@ -12,5 +12,10 @@ describe('Task', () => {
       const command = 'test';
       new Task(command).command.should.equal(command);
     });
+
+    it('should set its state to "queued"', () => {
+      const command = 'test';
+      new Task(command).state.should.equal('queued');
+    });
   });
 });
