@@ -1,11 +1,13 @@
+[![npm](https://img.shields.io/npm/v/cloth.svg)](https://www.npmjs.com/package/cloth) [![Travis](https://img.shields.io/travis/jakelazaroff/cloth.svg)](https://travis-ci.org/jakelazaroff/cloth)
+
 # Cloth
 
 Cloth is a simple thread pool and task queue for Node. It's a lightweight abstraction of Node's `child_process` and `EventEmitter` modules.
 
 ```javascript
-// index.js 
+// index.js
 
-const Pool = require('cloth');
+const Pool = require('cloth').Pool;
 
 const pool = new Pool(`${__dirname}/worker`);
 
@@ -17,7 +19,7 @@ pool.run('Hello, world!').on('end', data => {
 ```javascript
 // worker.js
 
-const Thread = require('cloth/thread');
+const Thread = require('cloth').Thread;
 
 class Worker extends Thread {
   run (command) {
@@ -39,17 +41,15 @@ npm install cloth --save
 
 ### Usage:
 
-First, we'll instantiate a pool:
+Instantiate a pool with the path to the worker file:
 
 ```javascript
-const Pool = require('cloth');
+const Pool = require('cloth').Pool;
 
 const pool = new Pool(`${__dirname}/worker`);
 ```
 
-The argument is the path from our current file to the worker file (we'll learn what that means in a bit). By default, the pool will check how many cores our CPU has and create that many workers. We can configure that by passing another argument, but let's leave it be for now.
-
-Next, we'll run a task:
+Run
 
 ```javascript
 const task = pool.run('Hello, world!');
@@ -141,7 +141,7 @@ Creates a new pool with a given worker file. By default, it will create the same
 **options**
 
 - `workers`: the number of workers to create
-- `arguments`: an array of string arguments to be sent to each worker on creation
+- `arguments`: an array of string arguments to be sent to each worker on creation as `process.argv`
 
 #### run(command)
 
@@ -149,7 +149,7 @@ Creates a task with the given command to be run as soon as a worker is available
 
 #### on(event, listener)
 
-
+Calls the supplied listener with the event message and task whenever an event of the specified type is triggered by any task.
 
 #### total()
 
@@ -173,10 +173,21 @@ Gets called with the task's command whenever the worker picks up a task. It must
 
 #### send(event, message)
 
+Sends an event with the supplied type and message back to the main process. Any listeners for that event type on either the task or the pool will get triggered.
+
 ### Task
+
+A set of instructions that get run as soon as a worker frees up. Tasks are picked up in the order they're sent.
 
 #### on(event, listener)
 
+Calls the supplied listener with the event message and task whenever an event of the specified type is triggered by this specific task.
+
 #### state
 
-Either `queued`, `processing`, `finished` or `error`.
+One of four possibilities:
+
+- `queued`: the task hasn't yet been picked up
+- `processing`: the task is currently running
+- `finished`: the task completed successfully
+- `error`: the task couldn't complete because of an error
