@@ -76,7 +76,7 @@ describe('Pool', () => {
       });
 
       const task = pool.run('wait');
-      task.state.should.equal('running');
+      task.state.should.equal('processing');
     });
 
     describe('queue', () => {
@@ -108,6 +108,8 @@ describe('Pool', () => {
 
   describe('.on', () => {
 
+    let task;
+
     beforeEach(() => {
       pool = new Pool(path, {
         workers: 1
@@ -115,8 +117,6 @@ describe('Pool', () => {
     });
 
     it('should proxy task "start" events', done => {
-      let task;
-
       pool.on('start', _task => {
         _task.should.equal(task);
         done();
@@ -126,9 +126,8 @@ describe('Pool', () => {
     });
 
     it('should proxy task "end" events', done => {
-      let task;
-
       pool.on('end', (message, _task) => {
+        message.should.equal('return');
         _task.should.equal(task);
         done();
       });
@@ -137,8 +136,6 @@ describe('Pool', () => {
     });
 
     it('should proxy task "error" events', done => {
-      let task;
-
       pool.on('error', (err, _task) => {
         _task.should.equal(task);
         done();
@@ -148,9 +145,8 @@ describe('Pool', () => {
     });
 
     it('should proxy arbitrary events', done => {
-      let task;
-
       pool.on('test', (message, _task) => {
+        message.should.equal('test');
         _task.should.equal(task);
         done();
       });
@@ -187,7 +183,7 @@ describe('Pool', () => {
 
       pool.total().should.equal(1);
 
-      const task = pool.run('wait').on('end', done);
+      const task = pool.run('wait').on('end', () => done());
 
       pool.total().should.equal(1);
       task._send('go');

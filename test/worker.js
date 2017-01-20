@@ -18,6 +18,8 @@ class Worker extends Thread {
 
   run (command, callback) {
 
+    this.send('command', command);
+
     if (command === 'error') {
       throw new Error();
     }
@@ -30,8 +32,8 @@ class Worker extends Thread {
     if (this.wait) {
       setTimeout(() => this.busyWait(callback), 0);
     } else {
-      this.send('test');
-      callback();
+      this.send('test', 'test');
+      callback(null, 'return');
     }
   }
 
