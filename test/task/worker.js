@@ -1,6 +1,6 @@
 'use strict';
 
-const Thread = require('../lib/thread');
+const Thread = require('../../lib/thread');
 
 class Worker extends Thread {
 

@@ -89,10 +89,18 @@ describe('Thread', () => {
       send('run', '');
     });
 
-    // it('should not let messages with types "start", "end", "error" or "*" be sent', done => {
-    //   send('run', '');
+    it('should not let messages with types "start", "end", "error" or "*" be sent', done => {
+      let remaining = 4;
+      const handleError = () => --remaining || done();
 
-    // });
+      on('start_error', handleError);
+      on('end_error', handleError);
+      on('error_error', handleError);
+      on('*_error', handleError);
+
+      send('run', '');
+
+    });
   });
 
 });
