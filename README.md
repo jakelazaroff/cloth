@@ -59,7 +59,7 @@ The argument we're passing is the task's command. When the task is picked up by 
 
 Since this is the first task we're running, all the workers are idle and the task will be run immediately. If we try to run tasks faster than our workers finish them, tasks will start getting put into a queue, where they'll run as soon as a worker finishes its current task.
 
-What if we want to get information back from a task? We can listen to events it sends back:
+What if we want information back from a task? We can listen to events it sends back:
 
 ```javascript
 task.on('end', data => {
@@ -86,7 +86,7 @@ All of this brings us to:
 ```javascript
 // worker.js
 
-const Thread = require('cloth/thread');
+const Thread = require('cloth').Thread;
 
 class Worker extends Thread {
   run (command) {
@@ -102,7 +102,7 @@ Remember how we instantiated the pool with the path to the worker file? This is 
 
 Cloth provides a base class called Thread for our workers. We extend that class with a class called Worker (or whatever other name we want), and then instantiate it.
 
-In our subclass, there's one method we have to override: `run`, which gets called with a command every time the worker picks up a task. We process the command however we want and return the result, and the worker will take care of the event.
+In our subclass, there's one method we have to override: `run`, which is called with a command every time the worker picks up a task. We process the command however we want and return the result, and the worker will take care of the event.
 
 If we encounter an error while we're processing, all we have to do is throw an error and the worker will take care of the error event:
 
@@ -169,15 +169,15 @@ A Thread is the workers' interface to Cloth. It manages lifecycle events and err
 
 #### run(command, [callback])
 
-Gets called with the task's command whenever the worker picks up a task. It must always be overridden (the Thread implementation of this method will throw an error). If this method doesn't take a callback, returning any value will cause the task to end successfully; If this method **does** take a callback, errors can be sent with `callback(err)` and successful results with `callback(null, results)`. Throwing an error will also make the worker send an error back to the main process.
+Gets called with the task's command whenever the worker picks up a task. It must always be overridden. If this method doesn't take a callback, returning any value will cause the task to end successfully; If this method **does** take a callback, errors can be sent with `callback(err)` and successful results with `callback(null, results)`. Throwing an error will also make the worker send an error back to the main process.
 
 #### send(event, message)
 
-Sends an event with the supplied type and message back to the main process. Any listeners for that event type on either the task or the pool will get triggered.
+Sends an event with the supplied type and message back to the main process. Any listeners for that event type on either the task or the pool will be triggered.
 
 ### Task
 
-A set of instructions that get run as soon as a worker frees up. Tasks are picked up in the order they're sent.
+A set of instructions that are run as soon as a worker frees up. Tasks are picked up in the order they're sent.
 
 #### on(event, listener)
 
