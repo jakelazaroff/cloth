@@ -19,16 +19,12 @@ pool.run('Hello, world!').on('end', data => {
 ```javascript
 // worker.js
 
-const Thread = require('cloth').Thread;
+const worker = require('cloth').worker;
 
-class Worker extends Thread {
-  run (command) {
-    console.log(command);
-    return 'Goodbye, world!';
-  }
-}
-
-new Worker();
+worker.run(command => {
+  console.log(command);
+  return 'Goodbye, world!';
+});
 ```
 
 ## Getting Started
@@ -55,9 +51,9 @@ Run
 const task = pool.run('Hello, world!');
 ```
 
-The argument we're passing is the task's command. When the task is picked up by a worker, the worker receives that command as input. Here, the. command is a string, but it can be an array, object or any other data structure.
+The argument we're passing is the task's command. Here, the command is a string, but it can be an array, object or any other serializable data structure.
 
-Since this is the first task we're running, all the workers are idle and the task will be run immediately. If we try to run tasks faster than our workers finish them, tasks will start getting put into a queue, where they'll run as soon as a worker finishes its current task.
+Since this is the first task we're running, all the workers are idle and the task will be run immediately. If we try to run tasks faster than our workers finish them, tasks will be put into a queue where they'll run as soon as a worker finishes its current task.
 
 What if we want information back from a task? We can listen to events it sends back:
 
@@ -79,60 +75,88 @@ task
   });
 ```
 
-We can chain together as many `on` calls as we'd like this way. Other than `start`, `end` and `error` (which are sent automatically) we can have the worker trigger any events we want.
+We can chain together as many `on` calls as we'd like this way — and other than `start`, `end` and `error`, we can have our worker send back custom events as well:
 
-All of this brings us to:
+```javascript
+task
+  .on('end', data => {
+    console.log(data);
+  })
+  .on('error', err => {
+    console.log(err);
+  })
+  .on('test', err => {
+    console.log(err);
+  });
+```
+
+All of which brings us to:
 
 ```javascript
 // worker.js
 
-const Thread = require('cloth').Thread;
+const worker = require('cloth').worker;
 
-class Worker extends Thread {
-  run (command) {
-    console.log(command);
-    return 'Goodbye, world!';
-  }
-}
-
-new Worker();
+worker.run(command => {
+  console.log(command);
+  return 'Goodbye, world!';
+});
 ```
 
-Remember how we instantiated the pool with the path to the worker file? This is that file! Let's dive in.
+Remember how we instantiated the pool with the path to the worker file? This is that file!
 
-Cloth provides a base class called Thread for our workers. We extend that class with a class called Worker (or whatever other name we want), and then instantiate it.
-
-In our subclass, there's one method we have to override: `run`, which is called with a command every time the worker picks up a task. We process the command however we want and return the result, and the worker will take care of the event.
-
-If we encounter an error while we're processing, all we have to do is throw an error and the worker will take care of the error event:
+The most important worker method is `run`. Every time the worker picks up a task, the callback supplied to this method is invoked with the task's command. We process the command however we want and return the result, and the worker will take care of sending the results back to the main process:
 
 ```javascript
-run (command) {
+worker.run(command => {
+  console.log(command);
+  return 'Goodbye, world!';
+});
+```
+
+If we run into problems, we just have to throw an error and the worker will let the main process know:
+
+```javascript
+worker.run(command => {
   if (!command) {
     throw new Error('No command!');
   }
   console.log(command);
   return 'Goodbye, world!';
-}
+});
 ```
 
-If our task is asynchronous, we can add a callback parameter and deal with things in normal Node style:
+If our task is asynchronous, we can add a callback parameter and deal with things in traditional Node style:
 
 ```javascript
-run (command, callback) {
+worker.run((command, callback) => {
   if (!command) {
     callback(new Error('No command!'));
   }
   console.log(command);
   callback(null, 'Goodbye, world!');
-}
+});
 ```
+
+Finally, if we need to, we can also send intermediate results back to the main process:
+
+```javascript
+worker.run((command, callback) => {
+  if (!command) {
+    callback(new Error('No command!'));
+  }
+  worker.send('test', 'message');
+  console.log(command);
+  callback(null, 'Goodbye, world!');
+});
+
+That's the quick intro to Cloth! Check out the API docs below for more information. Happy parallelism!
 
 ##API
 
 ### Pool
 
-A Pool is the main program's interface to Cloth. It manages the worker pool and task queue.
+A Pool is the main process's interface to the child processes. It manages the worker pool and task queue to optimize concurrency.
 
 #### constructor(worker, [options])
 
@@ -163,17 +187,21 @@ Returns the number of workers in the pool that are not currently processing task
 
 Kills all the worker processes and removes all the tasks from the queue.
 
-### Thread
+### worker
 
-A Thread is the workers' interface to Cloth. It manages lifecycle events and error handling, and provides a method for the worker to process tasks. This should be subclassed in the worker file.
+A worker is the children processes' interface to the main process. It invokes a user-defined function to process tasks and manages task lifecycle events and error handling.
 
 #### run(command, [callback])
 
-Gets called with the task's command whenever the worker picks up a task. It must always be overridden. If this method doesn't take a callback, returning any value will cause the task to end successfully; If this method **does** take a callback, errors can be sent with `callback(err)` and successful results with `callback(null, results)`. Throwing an error will also make the worker send an error back to the main process.
+Invoked with the task's command whenever the worker picks up a task. If this method doesn't take a callback, returning any value will cause the task to end successfully; if it **does** take a callback, errors can be sent with `callback(err)` and successful results with `callback(null, results)`. Throwing an error will also make the worker send an error back to the main process.
 
 #### send(event, message)
 
 Sends an event with the supplied type and message back to the main process. Any listeners for that event type on either the task or the pool will be triggered.
+
+#### arguments
+
+The arguments passed to the Pool when it was instantiated in the main process.
 
 ### Task
 
@@ -185,7 +213,7 @@ Calls the supplied listener with the event message and task whenever an event of
 
 #### state
 
-One of four possibilities:
+The state of a task with regard to the queue; one of four possibilities:
 
 - `queued`: the task hasn't yet been picked up
 - `processing`: the task is currently running
