@@ -2,5 +2,5 @@
 
 module.exports = {
   Pool: require('./lib/pool'),
-  Thread: require('./lib/thread')
+  thread: require('./lib/thread')
 };

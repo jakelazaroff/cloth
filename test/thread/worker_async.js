@@ -1,18 +1,12 @@
 'use strict';
 
-const Thread = require('../../lib/thread');
+const thread = require('../../lib/thread');
 
-class Worker extends Thread {
+thread.run((command, callback) => {
 
-  run (command, callback) {
-
-    if (command === 'error') {
-      return callback(new Error());
-    }
-
-    callback(null, 'test');
+  if (command === 'error') {
+    return callback(new Error());
   }
 
-}
-
-new Worker();
+  callback(null, 'test');
+});

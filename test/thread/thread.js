@@ -103,4 +103,22 @@ describe('Thread', () => {
     });
   });
 
+  describe('arguments', () => {
+
+    let args;
+
+    beforeEach(() => {
+      args = ['testarg', 'testarg2'];
+      worker = cp.fork(`${__dirname}/worker_sync`, args);
+    });
+
+    it('should set thread.arguments', done => {
+      on('args', message => {
+        message.should.eql(args);
+        done();
+      });
+      send('run', '');
+    });
+  });
+
 });

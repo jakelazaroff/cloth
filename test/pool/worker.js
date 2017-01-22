@@ -1,42 +1,32 @@
 'use strict';
 
-const Thread = require('../../lib/thread');
+const thread = require('../../lib/thread');
 
-class Worker extends Thread {
+let wait = true;
 
-  constructor () {
-    super();
+process.on('message', data => {
+  if (data.type === 'go') {
+    wait = false;
+  }
+});
 
-    this.wait = true;
+const busyWait = callback => {
+  if (wait) {
+    setTimeout(() => busyWait(callback), 0);
+  } else {
+    thread.send('test', 'test');
+    callback(null, 'return');
+  }
+};
 
-    process.on('message', data => {
-      if (data.type === 'go') {
-        this.wait = false;
-      }
-    });
+thread.run((command, callback) => {
+
+  thread.send('command', command);
+
+  if (command === 'error') {
+    throw new Error();
   }
 
-  run (command, callback) {
-
-    this.send('command', command);
-
-    if (command === 'error') {
-      throw new Error();
-    }
-
-    this.wait = command === 'wait';
-    this.busyWait(callback);
-  }
-
-  busyWait (callback) {
-    if (this.wait) {
-      setTimeout(() => this.busyWait(callback), 0);
-    } else {
-      this.send('test', 'test');
-      callback(null, 'return');
-    }
-  }
-
-}
-
-new Worker();
+  wait = command === 'wait';
+  busyWait(callback);
+});
