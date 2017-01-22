@@ -149,6 +149,7 @@ worker.run((command, callback) => {
   console.log(command);
   callback(null, 'Goodbye, world!');
 });
+```
 
 That's the quick intro to Cloth! Check out the API docs below for more information. Happy parallelism!
 
