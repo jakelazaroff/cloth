@@ -1,6 +1,6 @@
 'use strict';
 
-const thread = require('../../lib/thread');
+const worker = require('../../lib/worker');
 
 let wait = true;
 
@@ -14,14 +14,14 @@ const busyWait = callback => {
   if (wait) {
     setTimeout(() => busyWait(callback), 0);
   } else {
-    thread.send('test', 'test');
+    worker.send('test', 'test');
     callback(null, 'return');
   }
 };
 
-thread.run((command, callback) => {
+worker.run((command, callback) => {
 
-  thread.send('command', command);
+  worker.send('command', command);
 
   if (command === 'error') {
     throw new Error();

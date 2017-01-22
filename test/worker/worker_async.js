@@ -1,8 +1,8 @@
 'use strict';
 
-const thread = require('../../lib/thread');
+const worker = require('../../lib/worker');
 
-thread.run((command, callback) => {
+worker.run((command, callback) => {
 
   if (command === 'error') {
     return callback(new Error());

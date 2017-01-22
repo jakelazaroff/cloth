@@ -3,7 +3,7 @@
 // system
 const cp = require('child_process');
 
-describe('Thread', () => {
+describe('Worker', () => {
 
   let worker;
 
