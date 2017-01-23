@@ -11,8 +11,8 @@ const Pool = require('cloth').Pool;
 
 const pool = new Pool(`${__dirname}/worker`);
 
-pool.run('Hello, world!').on('end', data => {
-  console.log(data);
+pool.run('Hello, world!').on('end', message => {
+  console.log(message);
 });
 ```
 
@@ -58,8 +58,8 @@ Since this is the first task we're running, all the workers are idle and the tas
 What if we want information back from a task? We can listen to events it sends back:
 
 ```javascript
-task.on('end', data => {
-  console.log(data);
+task.on('end', message => {
+  console.log(message);
 });
 ```
 
@@ -67,8 +67,8 @@ The `end` event occurs when the worker finishes processing the task. But what ha
 
 ```javascript
 task
-  .on('end', data => {
-    console.log(data);
+  .on('end', message => {
+    console.log(message);
   })
   .on('error', err => {
     console.log(err);
@@ -79,8 +79,8 @@ We can chain together as many `on` calls as we'd like this way — and other tha
 
 ```javascript
 task
-  .on('end', data => {
-    console.log(data);
+  .on('end', message => {
+    console.log(message);
   })
   .on('error', err => {
     console.log(err);
@@ -166,7 +166,7 @@ Creates a new pool with a given worker file. By default, it will create the same
 **options**
 
 - `workers`: the number of workers to create
-- `arguments`: an array of string arguments to be sent to each worker on creation as `process.argv`
+- `arguments`: an array of string arguments to be sent to each worker as it's created
 
 #### run(command)
 
@@ -192,9 +192,9 @@ Kills all the worker processes and removes all the tasks from the queue.
 
 A worker is the children processes' interface to the main process. It invokes a user-defined function to process tasks and manages task lifecycle events and error handling.
 
-#### run(command, [callback])
+#### run(fn)
 
-Invoked with the task's command whenever the worker picks up a task. If this method doesn't take a callback, returning any value will cause the task to end successfully; if it **does** take a callback, errors can be sent with `callback(err)` and successful results with `callback(null, results)`. Throwing an error will also make the worker send an error back to the main process.
+Invokes the supplied function with the task's command whenever the worker picks up a task. The function signature should be `fn(command, [callback])`. If it doesn't take a callback, returning any value will cause the task to end successfully; if it **does** take a callback, errors can be sent with `callback(err)` and successful results with `callback(null, results)`. Throwing an error will also make the worker send an error back to the main process.
 
 #### send(event, message)
 
