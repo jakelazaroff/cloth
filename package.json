@@ -1,6 +1,6 @@
 {
   "name": "cloth",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Cloth is a simple thread pool and task queue for Node.",
   "main": "index.js",
   "scripts": {
