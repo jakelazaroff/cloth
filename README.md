@@ -7,7 +7,7 @@ Cloth is a simple thread pool and task queue for Node. It's a lightweight abstra
 ```javascript
 // index.js
 
-const Pool = require('cloth').Pool;
+const Pool = require('cloth/pool');
 
 const pool = new Pool(`${__dirname}/worker`);
 
@@ -19,7 +19,7 @@ pool.run('Hello, world!').on('end', message => {
 ```javascript
 // worker.js
 
-const worker = require('cloth').worker;
+const worker = require('cloth/worker');
 
 worker.run(command => {
   console.log(command);
@@ -40,7 +40,7 @@ npm install cloth --save
 Instantiate a pool with the path to the worker file:
 
 ```javascript
-const Pool = require('cloth').Pool;
+const Pool = require('cloth/pool');
 
 const pool = new Pool(`${__dirname}/worker`);
 ```
@@ -95,7 +95,7 @@ All of which brings us to:
 ```javascript
 // worker.js
 
-const worker = require('cloth').worker;
+const worker = require('cloth/worker');
 
 worker.run(command => {
   console.log(command);
