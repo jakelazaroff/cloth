@@ -32,27 +32,22 @@ describe('Pool', () => {
       os.cpus.restore();
     });
 
-    it('should create a worker with the given path', () => {
-
+    it('should default to the number of workers returned by os.cpus()', () => {
       pool = new Pool(path);
 
-      Object.keys(pool.workers).forEach(key => {
-        pool.workers[key].spawnargs[1].should.equal(path);
-      });
-    });
-
-    it('should default to the number of workers returned by os.cpus()', () => {
+      pool.options.workers.should.equal(5);
       os.cpus.should.be.calledOnce;
-      Object.keys(new Pool(path).workers).length.should.equal(5);
     });
 
     describe('options', () => {
       it('should use the number of workers passed in if specified', () => {
         const num = 7;
 
-        Object.keys(new Pool(path, {
+        pool = new Pool(path, {
           workers: num
-        }).workers).length.should.equal(num);
+        });
+
+        pool.options.workers.should.equal(num);
       });
 
       it('should pass arguments to the workers', () => {
@@ -70,13 +65,34 @@ describe('Pool', () => {
 
   describe('.run', () => {
 
-    it('should run the task immediately if there are idle workers', () => {
+    it('should create a new worker if there are no idle workers and fewer workers exist than the worker limit', () => {
+
+      pool = new Pool(path);
+      Object.keys(pool.workers).length.should.equal(0);
+
+      pool.run('');
+
+      const workers = Object.keys(pool.workers);
+
+      workers.length.should.equal(1);
+      workers.forEach(key => {
+        pool.workers[key].spawnargs[1].should.equal(path);
+      });
+    });
+
+    it('should run the task immediately if there are idle workers', done => {
       pool = new Pool(path, {
         workers: 1
       });
 
-      const task = pool.run('wait');
-      task.state.should.equal('processing');
+      pool.run('').on('end', () => {
+        const task = pool.run('wait');
+
+        task.state.should.equal('processing');
+        Object.keys(pool.workers).length.should.equal(1);
+
+        done();
+      });
     });
 
     describe('queue', () => {
@@ -198,7 +214,8 @@ describe('Pool', () => {
         workers: 1
       });
 
-      pool.workers[pool.idle[0]].on('exit', done);
+      pool.run('');
+      pool.workers[Object.keys(pool.workers)[0]].on('exit', done);
 
       pool.drain();
     });
