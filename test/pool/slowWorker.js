@@ -21,15 +21,17 @@ const busyWait = callback => {
 
 // Don't let mocha run this code directly.
 if (process.send !== undefined) {
-  worker.run((command, callback) => {
+  setTimeout(() => {
+    worker.run((command, callback) => {
 
-    worker.send('command', command);
+      worker.send('command', command);
 
-    if (command === 'error') {
-      throw new Error();
-    }
+      if (command === 'error') {
+        throw new Error();
+      }
 
-    wait = command === 'wait';
-    busyWait(callback);
-  });
+      wait = command === 'wait';
+      busyWait(callback);
+    });
+  }, 1000);
 }

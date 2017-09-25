@@ -188,6 +188,19 @@ Returns the number of workers in the pool that are not currently processing task
 
 Kills all the worker processes and removes all the tasks from the queue.
 
+#### Events
+
+The Pool class will emit the following events to allow applications to respond to back-pressure from the pool.
+
+##### drain
+All workers have completed.
+
+##### empty
+A worker has become available.
+
+##### saturated
+All workers are busy.
+
 ### worker
 
 A worker is the children processes' interface to the main process. It invokes a user-defined function to process tasks and manages task lifecycle events and error handling.

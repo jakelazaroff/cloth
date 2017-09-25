@@ -2,6 +2,7 @@
 
 // system
 const os = require('os');
+const util = require('util');
 
 // libraries
 require('chai').should();
@@ -117,7 +118,9 @@ describe('Pool', () => {
         const task1 = pool.run('wait'),
               task2 = pool.run('wait').on('start', done);
 
-        task1._send('go');
+        task1.on('start', () =>  {
+          task1._send('go');
+        });
       });
     });
   });
@@ -186,7 +189,9 @@ describe('Pool', () => {
       });
 
       pool.available().should.equal(0);
-      task._send('go');
+      task.on('start', () =>  {
+        task._send('go');
+      });
     });
   });
 
@@ -202,7 +207,9 @@ describe('Pool', () => {
       const task = pool.run('wait').on('end', () => done());
 
       pool.total().should.equal(1);
-      task._send('go');
+      task.on('start', () => {
+        task._send('go');
+      });
     });
   });
 
@@ -228,6 +235,79 @@ describe('Pool', () => {
       pool.run('');
       pool.drain();
       pool.tasks.length.should.equal(0);
+    });
+  });
+
+  describe('events', () => {
+    
+    it('should emit saturated when all workers are busy', done => {
+      var pool = new Pool(path, {
+        workers: 2
+      });
+
+      var task1;
+      var task2;
+      var task3;
+
+      pool.on('saturated', () =>  {
+        pool.drain();
+        done();
+      });
+
+      task1 = pool.run('wait');
+      task2 = pool.run('wait');
+      task3 = pool.run('');
+    });
+
+    it('should emit empty when a worker is done', done => {
+      var pool = new Pool(path, {
+        workers: 1
+      });
+
+      pool.on('empty', () =>  {
+        pool.drain();
+        done();
+      });
+
+      pool.run('');
+    });
+
+    it('should emit drain when queue is empty', done => {
+      var pool = new Pool(path, {
+        workers: 2
+      });
+
+      pool.on('drain', () =>  {
+        pool.drain();
+        done();
+      });
+      var task1 = pool.run('wait').on('start', () =>  { task1._send('go');});
+      var task2 = pool.run('wait').on('start', () =>  { task2._send('go');});
+      var task3 = pool.run('');
+    });
+  });
+});
+
+describe('Pool, slow worker', () =>  {
+
+  var pool, path;
+
+  beforeEach(() =>  {
+    path = util.format('%s/slowWorker', __dirname);
+  });
+
+  afterEach( () =>  {
+    pool.drain();
+  });
+
+  describe('.run',  () =>  {
+
+    it('should wait for slow worker to be ready',  done => {
+      pool = new Pool(path);
+
+      pool.run('').on('end', () =>  {
+        done();
+      });
     });
   });
 });

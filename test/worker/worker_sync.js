@@ -2,19 +2,22 @@
 
 const worker = require('../../lib/worker');
 
-worker.run((command) => {
+// Don't let mocha run this code directly.
+if (process.send !== undefined) {
+  worker.run((command) => {
 
-  if (command === 'error') {
-    throw new Error();
-  }
+    if (command === 'error') {
+      throw new Error();
+    }
 
-  worker.send('test', 'test');
-  worker.send('args', worker.arguments);
+    worker.send('test', 'test');
+    worker.send('args', worker.arguments);
 
-  try { worker.send('start') } catch (e) { worker.send('start_error'); }
-  try { worker.send('end') } catch (e) { worker.send('end_error'); }
-  try { worker.send('error') } catch (e) { worker.send('error_error'); }
-  try { worker.send('*') } catch (e) { worker.send('*_error'); }
+    try { worker.send('start') } catch (e) { worker.send('start_error'); }
+    try { worker.send('end') } catch (e) { worker.send('end_error'); }
+    try { worker.send('error') } catch (e) { worker.send('error_error'); }
+    try { worker.send('*') } catch (e) { worker.send('*_error'); }
 
-  return 'test';
-});
+    return 'test';
+  });
+}
