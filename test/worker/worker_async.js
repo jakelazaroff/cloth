@@ -2,11 +2,14 @@
 
 const worker = require('../../lib/worker');
 
-worker.run((command, callback) => {
+// Don't let mocha run this code directly.
+if (process.send !== undefined) {
+  worker.run((command, callback) => {
 
-  if (command === 'error') {
-    return callback(new Error());
-  }
+    if (command === 'error') {
+      return callback(new Error());
+    }
 
-  callback(null, 'test');
-});
+    callback(null, 'test');
+  });
+}
